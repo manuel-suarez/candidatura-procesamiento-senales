@@ -159,3 +159,56 @@ class Sampler(keras.Model):
     '''
     '''
     return self.model(inputs)
+
+  class Encoder(keras.Model):
+    def __init__(self, input_dim, output_dim, encoder_conv_filters, encoder_conv_kernel_size, encoder_conv_strides,
+                 use_batch_norm=True, use_dropout=True, **kwargs):
+      '''
+      '''
+      super(Encoder, self).__init__(**kwargs)
+
+      self.input_dim = input_dim
+      self.output_dim = output_dim
+      self.encoder_conv_filters = encoder_conv_filters
+      self.encoder_conv_kernel_size = encoder_conv_kernel_size
+      self.encoder_conv_strides = encoder_conv_strides
+      self.n_layers_encoder = len(self.encoder_conv_filters)
+      self.use_batch_norm = use_batch_norm
+      self.use_dropout = use_dropout
+
+      self.model = self.encoder_model()
+      self.built = True
+
+    def get_config(self):
+      config = super(Encoder, self).get_config()
+      config.update({"units": self.units})
+      return config
+
+    def encoder_model(self):
+      '''
+      '''
+      encoder_input = layers.Input(shape=self.input_dim, name='encoder')
+      x = encoder_input
+
+      for i in range(self.n_layers_encoder):
+        x = Conv2D(filters=self.encoder_conv_filters[i],
+                   kernel_size=self.encoder_conv_kernel_size[i],
+                   strides=self.encoder_conv_strides[i],
+                   padding='same',
+                   name='encoder_conv_' + str(i), )(x)
+        if self.use_batch_norm:
+          x = BatchNormalization()(x)
+        x = LeakyReLU()(x)
+        if self.use_dropout:
+          x = Dropout(rate=0.25)(x)
+
+      self.last_conv_size = x.shape[1:]
+      x = Flatten()(x)
+      encoder_output = Dense(self.output_dim)(x)
+      model = keras.Model(encoder_input, encoder_output)
+      return model
+
+    def call(self, inputs):
+      '''
+      '''
+      return self.model(inputs)
