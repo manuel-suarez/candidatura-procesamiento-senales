@@ -513,3 +513,30 @@ Dtf_y_test = tf.expand_dims(tf.convert_to_tensor(Dy_test, dtype=tf.float32), axi
 # print(Dtf_y.shape)
 Dtf_test = tf.keras.layers.Concatenate(axis=3)([Dtf_x_test, Dtf_y_test])
 Ztf_test = tf.expand_dims(tf.convert_to_tensor(Z_test, dtype=tf.float32), axis=-1)
+
+# Predicción de resultados
+# Visualizamos un conjunto de predicciones
+num_vis = 4
+fig, ax = plt.subplots(nrows=num_vis, ncols=4, figsize=(10, 10))
+for i in range(num_vis):
+  # Obtenemos la predicción
+  data = tf.expand_dims(Dtf_test[i], axis=0)
+  x  = vae.encoder_model(data)
+  z, z_mean, z_log_var = vae.sampler_model(x)
+  x_decoded = scale_factor * vae.decoder_model(z)
+  #digit = x_decoded[0].reshape(digit_size, digit_size)
+  print(np.max(x_decoded), np.min(x_decoded))
+  print(np.max(Ztf_test[i]), np.max(Ztf_test[i]))
+
+  # Desplegamos
+  ax[i, 0].imshow(Dtf_test[i,:,:,0])
+  ax[i, 0].set_title('Gradiente X')
+  ax[i, 1].imshow(Dtf_test[i,:,:,1])
+  ax[i, 1].set_title('Gradiente Y')
+  # ax[i, 2].imshow(pred[0,:,:,0])
+  ax[i, 2].imshow(x_decoded[0,:,:,0])
+  ax[i, 2].set_title('Predicción')
+  ax[i, 3].imshow(Ztf_test[i,:,:,0])
+  ax[i, 3].set_title('Integral')
+fig.tight_layout()
+plt.show()
