@@ -99,3 +99,27 @@ for i in range(3):
 
 fig.tight_layout()
 plt.show()
+
+# Arquitectura del Autoencoder variacional
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+from tensorflow.keras.layers import Dense, Conv2D, Conv2DTranspose
+from tensorflow.keras.layers import Flatten, Reshape, Dropout, BatchNormalization, Activation, LeakyReLU
+from tensorflow.keras.models import Model
+from tensorflow.keras.models import Sequential
+from keras.utils.vis_utils import plot_model
+
+# Dimensión de la imagen de entrada (el polinomio) utilizado en el entrenamiento y pruebas
+INPUT_DIM     = (128,128,1)
+# Utilizamos dos canales de entrada para representar las derivadas parciales del polinomio
+GRADIENT_DIM  = (128,128,2)
+# Dimensión del espacio latente
+LATENT_DIM    = 150
+BATCH_SIZE    = 384
+R_LOSS_FACTOR = 100000  # 10000
+EPOCHS        = 50
+INITIAL_EPOCH = 0
+
+steps_per_epoch = num//BATCH_SIZE
