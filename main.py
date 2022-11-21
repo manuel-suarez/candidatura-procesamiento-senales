@@ -58,3 +58,14 @@ def W(p):
 WZ = []
 for img in Z:
   WZ.append(W(img))
+
+# Desplegamos una muestra de los polinomios con envolvimiento de fase
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+for i in range(3):
+  for j in range(3):
+    print(f"Señal {i*3+j}, máx: {np.max(WZ[i*3+j])}, min: {np.min(WZ[i*3+j])}")
+    ax[i,j].imshow(WZ[i*3 + j])
+    ax[i,j].set_title(f"W(Señal {i*3+j})")
+
+fig.tight_layout()
+plt.show()
