@@ -480,3 +480,36 @@ def plot_latent_space(vae, input_size=(28,28,1), n=30, figsize=15,  scale=1., la
 
 
 plot_latent_space(vae, input_size=INPUT_DIM, n = 6, latents_start=[20,30], scale=3)
+
+# Generación de conjunto de polinomios de prueba
+# Generamos imágenes de prueba
+Z_test = []
+for i in range(num_test):
+  # Variamos los parámetros para el polinomio
+  c = np.random.normal(size=cart.nk)
+  # Generamos polinomio
+  Phi = cart.eval_grid(c, matrix=True)
+  # Reemplazamos NaN con 0
+  p = np.nan_to_num(Phi, False, 0)
+  # Reescalamos a 0-1 (necesario para que la red calcule correctamente las métricas)
+  #p_scaled = (p - np.min(p)) / (np.max(p) - np.min(p))
+  Z_test.append(p)
+# Aplicamos función de fase
+WZ_test = []
+for img in Z_test:
+    WZ_test.append(W(img))
+# Generamos las derivadas direccionales para cada imagen
+Dx_test = []
+Dy_test = []
+for img in Z_test:
+  img_dy, img_dx = np.gradient(img)
+  Dx_test.append(W(img_dx))
+  Dy_test.append(W(img_dy))
+# Conversión a tensores
+# Convertimos a tensores
+Dtf_x_test = tf.expand_dims(tf.convert_to_tensor(Dx_test, dtype=tf.float32), axis=-1)
+Dtf_y_test = tf.expand_dims(tf.convert_to_tensor(Dy_test, dtype=tf.float32), axis=-1)
+# print(Dtf_x.shape)
+# print(Dtf_y.shape)
+Dtf_test = tf.keras.layers.Concatenate(axis=3)([Dtf_x_test, Dtf_y_test])
+Ztf_test = tf.expand_dims(tf.convert_to_tensor(Z_test, dtype=tf.float32), axis=-1)
