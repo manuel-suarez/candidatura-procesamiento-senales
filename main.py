@@ -402,3 +402,20 @@ class Sampler(keras.Model):
 
       self.encoder_model.use_Dropout, self.decoder_model.use_Dropout = tmp1, tmp2
       return pred
+
+# Preparación de los datos de entrada
+
+# Convertimos la lista a tensor y agregamos la dimensión del canal (1)
+Dtf_Wx = tf.expand_dims(tf.convert_to_tensor(DWx, dtype=tf.float32), axis=-1)
+Dtf_Wy = tf.expand_dims(tf.convert_to_tensor(DWy, dtype=tf.float32), axis=-1)
+# Combinamos los gradientes en un tensor de 2 canales de acuerdo con la especificación
+# de la entrada del encoder INPUT_DIM
+Dtf = tf.keras.layers.Concatenate(axis=3)([Dtf_Wx, Dtf_Wy])
+Ztf = tf.expand_dims(tf.convert_to_tensor(Z, dtype=tf.float32), axis=-1)
+# Visualizamos el primer dato para verificar que el Tensor se haya creado correctamente
+fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(10, 10))
+ax[0].imshow(Ztf[0,:,:,0])
+ax[1].imshow(Dtf[0,:,:,0])
+ax[2].imshow(Dtf[0,:,:,1])
+fig.tight_layout()
+plt.show()
