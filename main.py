@@ -48,7 +48,7 @@ for i in range(3):
     ax[i,j].set_title(f"Señal {i*3+j}")
 
 fig.tight_layout()
-plt.show()
+plt.savefig("figura1.png")
 
 # Definimos función W para el envolvimiento de fase del polinomio
 def W(p):
@@ -68,7 +68,7 @@ for i in range(3):
     ax[i,j].set_title(f"W(Señal {i*3+j})")
 
 fig.tight_layout()
-plt.show()
+plt.savefig("figura2.png")
 
 # Generamos las derivadas direccionales para cada imagen sobre la fase envuelta
 DWx = []
@@ -87,7 +87,7 @@ for i in range(3):
     ax[i,j].set_title(f"DWx {i*3+j}")
 
 fig.tight_layout()
-plt.show()
+plt.savefig("figura3.png")
 
 # Desplegamos una muestra de los gradientes en Y
 fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
@@ -98,7 +98,7 @@ for i in range(3):
     ax[i,j].set_title(f"DWy {i*3+j}")
 
 fig.tight_layout()
-plt.show()
+plt.savefig("figura4.png")
 
 # Arquitectura del Autoencoder variacional
 import numpy as np
@@ -419,7 +419,7 @@ ax[0].imshow(Ztf[0,:,:,0])
 ax[1].imshow(Dtf[0,:,:,0])
 ax[2].imshow(Dtf[0,:,:,1])
 fig.tight_layout()
-plt.show()
+plt.savefig("figura5.png")
 
 # Instanciación de la VAE
 vae = VAE(r_loss_factor=R_LOSS_FACTOR, summary=True)
@@ -476,7 +476,7 @@ def plot_latent_space(vae, input_size=(28,28,1), n=30, figsize=15,  scale=1., la
     plt.xlabel("z[{}]".format(latents_start[0]))
     plt.ylabel("z[{}]".format(latents_start[1]))
     plt.imshow(canvas[:,:,0])
-    #plt.show()
+    plt.savefig("figura6.png")
 
 
 plot_latent_space(vae, input_size=INPUT_DIM, n = 6, latents_start=[20,30], scale=3)
@@ -539,4 +539,4 @@ for i in range(num_vis):
   ax[i, 3].imshow(Ztf_test[i,:,:,0])
   ax[i, 3].set_title('Integral')
 fig.tight_layout()
-plt.show()
+plt.savefig("figura7.png")
