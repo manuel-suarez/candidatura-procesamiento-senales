@@ -53,3 +53,8 @@ plt.show()
 # Definimos función W para el envolvimiento de fase del polinomio
 def W(p):
   return np.arctan2(np.sin(p), np.cos(p))
+
+# En vez de generar las derivadas direccionales ahora aplicamos el envolvimiento de fase del polinomio
+WZ = []
+for img in Z:
+  WZ.append(W(img))
