@@ -37,3 +37,15 @@ for i in range(num):
   #p_scaled = (p - np.min(p)) / (np.max(p) - np.min(p))
   # Agregamos a conjunto de resultados
   Z.append(p)
+
+# Desplegamos una muestra
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+for i in range(3):
+  for j in range(3):
+    # print(Z[i*3 + j])
+    print(f"Señal {i*3+j}, máx: {np.max(Z[i*3+j])}, min: {np.min(Z[i*3+j])}")
+    ax[i,j].imshow(Z[i*3 + j])
+    ax[i,j].set_title(f"Señal {i*3+j}")
+
+fig.tight_layout()
+plt.show()
