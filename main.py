@@ -8,7 +8,7 @@ from numpy.random import random, randint, randn
 from zernike import RZern
 
 # Definimos parámetros iniciales
-scale_factor = 10   # Factor de escala para obtener el rango dinámico de los polinomios
+scale_factor = 5   # Factor de escala para obtener el rango dinámico de los polinomios
 order = 6           # Orden de los polinomios a generar
 cart = RZern(order) # Generador de polinomios
 dim = 128           # Tamaño de dimensiones de imagen
@@ -119,7 +119,7 @@ GRADIENT_DIM  = (128,128,2)
 LATENT_DIM    = 150
 BATCH_SIZE    = 384
 R_LOSS_FACTOR = 100000  # 10000
-EPOCHS        = 200
+EPOCHS        = 30
 INITIAL_EPOCH = 0
 
 steps_per_epoch = num//BATCH_SIZE
@@ -437,12 +437,24 @@ callbacks = [checkpoint]
 
 # Entrenamiento de la red
 vae.compile(optimizer=keras.optimizers.Adam())
-vae.fit([Dtf, Ztf],
+history = vae.fit([Dtf, Ztf],
         batch_size      = BATCH_SIZE,
         epochs          = EPOCHS,
         initial_epoch   = INITIAL_EPOCH,
         steps_per_epoch = steps_per_epoch,
         callbacks       = callbacks)
+# Resultados del entrenamiento
+# Plot training & validation loss values
+plt.figure(figsize=(30, 5))
+plt.subplot(121)
+plt.plot(history.history['loss'])
+plt.plot(history.history['reconstruction_loss'])
+plt.title('Model loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['Loss', 'Reconstruction'], loc='upper left')
+plt.savefig("figura6.png")
+
 vae.save_weights("final_weights_model_vae2.h5")
 
 import matplotlib.pyplot as plt
@@ -476,7 +488,7 @@ def plot_latent_space(vae, input_size=(28,28,1), n=30, figsize=15,  scale=1., la
     plt.xlabel("z[{}]".format(latents_start[0]))
     plt.ylabel("z[{}]".format(latents_start[1]))
     plt.imshow(canvas[:,:,0])
-    plt.savefig("figura6.png")
+    plt.savefig("figura7.png")
 
 
 plot_latent_space(vae, input_size=INPUT_DIM, n = 6, latents_start=[20,30], scale=3)
@@ -539,4 +551,4 @@ for i in range(num_vis):
   ax[i, 3].imshow(Ztf_test[i,:,:,0])
   ax[i, 3].set_title('Integral')
 fig.tight_layout()
-plt.savefig("figura7.png")
+plt.savefig("figura8.png")
