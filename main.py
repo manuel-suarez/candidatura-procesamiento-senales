@@ -8,7 +8,7 @@ from numpy.random import random, randint, randn
 from zernike import RZern
 
 # Definimos parámetros iniciales
-scale_factor = 10   # Factor de escala para obtener el rango dinámico de los polinomios
+scale_factor = 20   # Factor de escala para obtener el rango dinámico de los polinomios
 order = 6           # Orden de los polinomios a generar
 cart = RZern(order) # Generador de polinomios
 dim = 128           # Tamaño de dimensiones de imagen
