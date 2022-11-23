@@ -264,7 +264,7 @@ class Decoder(keras.Model):
         if self.use_dropout:
           x = Dropout(rate=0.25)(x)
       else:
-        x = Activation('sigmoid')(x)
+        x = Activation('tanh')(x)
     decoder_output = x
     model = keras.Model(decoder_input, decoder_output)
     return model
@@ -537,8 +537,8 @@ for i in range(num_vis):
   z, z_mean, z_log_var = vae.sampler_model(x)
   x_decoded = scale_factor * vae.decoder_model(z)
   #digit = x_decoded[0].reshape(digit_size, digit_size)
-  print(np.max(x_decoded), np.min(x_decoded))
-  print(np.max(Ztf_test[i]), np.max(Ztf_test[i]))
+  print(np.min(x_decoded), np.max(x_decoded))
+  print(i, np.min(Ztf_test[i]), np.max(Ztf_test[i]))
 
   # Desplegamos
   ax[i, 0].imshow(Dtf_test[i,:,:,0])
