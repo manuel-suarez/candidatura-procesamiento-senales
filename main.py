@@ -70,14 +70,44 @@ for i in range(3):
 fig.tight_layout()
 plt.savefig("figura2.png")
 
+# Generamos las derivadas direccionales para cada imagen sin envoltura
+Dx = []
+Dy = []
+for img in Z:
+  img_dy, img_dx = np.gradient(img)
+  # Aplicamos W a los gradientes para eliminar las transiciones
+  Dx.append(img_dx)
+  Dy.append(img_dy)
+
+# Desplegamos una muestra de los gradientes en X
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+for i in range(3):
+  for j in range(3):
+    ax[i,j].imshow(Dx[i*3 + j])
+    ax[i,j].set_title(f"Dx {i*3+j}")
+
+fig.tight_layout()
+plt.savefig("figura3.png")
+
+# Desplegamos una muestra de los gradientes en Y
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+for i in range(3):
+  for j in range(3):
+    #print(Dy[i*3 + j])
+    ax[i,j].imshow(Dy[i*3 + j])
+    ax[i,j].set_title(f"Dy {i*3+j}")
+
+fig.tight_layout()
+plt.savefig("figura4.png")
+
 # Generamos las derivadas direccionales para cada imagen sobre la fase envuelta
 DWx = []
 DWy = []
 for img in WZ:
   img_dy, img_dx = np.gradient(img)
   # Aplicamos W a los gradientes para eliminar las transiciones
-  DWx.append(img_dx)
-  DWy.append(img_dy)
+  DWx.append(W(img_dx))
+  DWy.append(W(img_dy))
 
 # Desplegamos una muestra de los gradientes en X
 fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
@@ -87,7 +117,7 @@ for i in range(3):
     ax[i,j].set_title(f"DWx {i*3+j}")
 
 fig.tight_layout()
-plt.savefig("figura3.png")
+plt.savefig("figura5.png")
 
 # Desplegamos una muestra de los gradientes en Y
 fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
@@ -98,7 +128,7 @@ for i in range(3):
     ax[i,j].set_title(f"DWy {i*3+j}")
 
 fig.tight_layout()
-plt.savefig("figura4.png")
+plt.savefig("figura6.png")
 
 # Arquitectura del Autoencoder variacional
 import numpy as np
@@ -419,7 +449,7 @@ ax[0].imshow(Ztf[0,:,:,0])
 ax[1].imshow(Dtf[0,:,:,0])
 ax[2].imshow(Dtf[0,:,:,1])
 fig.tight_layout()
-plt.savefig("figura5.png")
+plt.savefig("figura7.png")
 
 # Instanciación de la VAE
 vae = VAE(r_loss_factor=R_LOSS_FACTOR, summary=True)
@@ -453,7 +483,7 @@ plt.title('Model loss')
 plt.ylabel('Loss')
 plt.xlabel('Epoch')
 plt.legend(['Loss', 'Reconstruction'], loc='upper left')
-plt.savefig("figura6.png")
+plt.savefig("figura8.png")
 
 vae.save_weights("final_weights_model_vae2.h5")
 
@@ -488,7 +518,7 @@ def plot_latent_space(vae, input_size=(28,28,1), n=30, figsize=15,  scale=1., la
     plt.xlabel("z[{}]".format(latents_start[0]))
     plt.ylabel("z[{}]".format(latents_start[1]))
     plt.imshow(canvas[:,:,0])
-    plt.savefig("figura7.png")
+    plt.savefig("figura9.png")
 
 
 plot_latent_space(vae, input_size=INPUT_DIM, n = 6, latents_start=[20,30], scale=3)
@@ -551,4 +581,4 @@ for i in range(num_vis):
   ax[i, 3].imshow(Ztf_test[i,:,:,0])
   ax[i, 3].set_title('Integral')
 fig.tight_layout()
-plt.savefig("figura8.png")
+plt.savefig("figura10.png")
