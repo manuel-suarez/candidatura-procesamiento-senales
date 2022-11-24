@@ -15,14 +15,15 @@ def train_model(scale_factor, fn_activation):
     :param fn_activation: Función de activación del decodificador
     :return:
     '''
+    print(80*"=")
+    print(f"Factor de escala: {scale_factor}, Función de activación: {fn_activation}")
+    print(80 * "=")
     order = 6           # Orden de los polinomios a generar
     cart = RZern(order) # Generador de polinomios
     dim = 128           # Tamaño de dimensiones de imagen
     L, K = dim, dim     # Tamaño de cada imagen
     num = 20000         # Tamaño conjunto de entrenamiento
     num_test = 5000     # Tamaño conjunto de prueba
-    num_epochs = 50     # Número de épocas para el entrenamiento
-    latent_dim = 10      # Dimensión del espacio latente de la red VAE
     # Definimos el grid para la generación de las señales
     ddx = np.linspace(-1.0, 1.0, K)
     ddy = np.linspace(-1.0, 1.0, L)
@@ -154,7 +155,7 @@ def train_model(scale_factor, fn_activation):
     LATENT_DIM    = 150
     BATCH_SIZE    = 384
     R_LOSS_FACTOR = 100000  # 10000
-    EPOCHS        = 2
+    EPOCHS        = 100
     INITIAL_EPOCH = 0
 
     steps_per_epoch = num//BATCH_SIZE
