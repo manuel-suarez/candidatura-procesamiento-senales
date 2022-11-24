@@ -507,8 +507,7 @@ def train_model(scale_factor, fn_activation):
     plt.close()
 
     # Instanciación de la VAE
-    vae = VAE(r_loss_factor=R_LOSS_FACTOR, summary=True)
-    vae.summary()
+    vae = VAE(r_loss_factor=R_LOSS_FACTOR)
 
     from tensorflow.keras.callbacks import ModelCheckpoint
     filepath = 'best_weight_model_vae2.h5'
