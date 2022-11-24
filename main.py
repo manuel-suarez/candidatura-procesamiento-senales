@@ -7,6 +7,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.layers import Dense, Conv2D, Conv2DTranspose
 from tensorflow.keras.layers import Flatten, Reshape, Dropout, BatchNormalization, Activation, LeakyReLU
+from matplotlib import pyplot as plt
 
 # Usamos un mismo conjunto de polinomios para el entrenamiento con variación de parámetros
 order = 6           # Orden de los polinomios a generar
@@ -37,8 +38,6 @@ for i in range(num):
   Z.append(p)
 
 # Desplegamos una muestra
-from matplotlib import pyplot as plt
-
 fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
 for i in range(3):
   for j in range(3):
@@ -494,12 +493,17 @@ def train_model(scale_factor, fn_activation):
     Dtf = tf.keras.layers.Concatenate(axis=3)([Dtf_Wx, Dtf_Wy])
     Ztf = tf.expand_dims(tf.convert_to_tensor(Z, dtype=tf.float32), axis=-1)
     # Visualizamos el primer dato para verificar que el Tensor se haya creado correctamente
-    fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(10, 10))
-    ax[0].imshow(Ztf[0,:,:,0])
-    ax[1].imshow(Dtf[0,:,:,0])
-    ax[2].imshow(Dtf[0,:,:,1])
+    from matplotlib import pyplot as plt
+    fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+    for i in range(3):
+        ax[i,0].imshow(Ztf[i,:,:,0])
+        ax[i,0].set_title(f"Z {i}")
+        ax[i,1].imshow(Dtf[i,:,:,0])
+        ax[i,1].set_title(f"DWx {i}")
+        ax[i,2].imshow(Dtf[i,:,:,1])
+        ax[i,2].set_title(f"DWy {i}")
     fig.tight_layout()
-    plt.savefig(f"scale_{scale_factor}_activation_{fn_activation}_figura7.png")
+    plt.savefig(f"scale_{scale_factor}_activation_{fn_activation}_tensor_entrada.png")
     plt.close()
 
     # Instanciación de la VAE
@@ -525,7 +529,7 @@ def train_model(scale_factor, fn_activation):
             steps_per_epoch = steps_per_epoch,
             callbacks       = callbacks)
     # Resultados del entrenamiento
-    from matplotlib import pyplot as plt
+
     # Plot training & validation loss values
     plt.figure(figsize=(30, 5))
     plt.subplot(121)
