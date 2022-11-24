@@ -76,8 +76,8 @@ DWy = []
 for img in Z:
   img_dy, img_dx = np.gradient(img)
   # Aplicamos W a los gradientes para eliminar las transiciones
-  DWx.append(W(img_dx))
-  DWy.append(W(img_dy))
+  DWx.append(img_dx)
+  DWy.append(img_dy)
 
 # Desplegamos una muestra de los gradientes en X
 fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
