@@ -8,6 +8,176 @@ from tensorflow.keras import layers
 from tensorflow.keras.layers import Dense, Conv2D, Conv2DTranspose
 from tensorflow.keras.layers import Flatten, Reshape, Dropout, BatchNormalization, Activation, LeakyReLU
 
+# Usamos un mismo conjunto de polinomios para el entrenamiento con variación de parámetros
+order = 6           # Orden de los polinomios a generar
+cart = RZern(order) # Generador de polinomios
+dim = 128           # Tamaño de dimensiones de imagen
+L, K = dim, dim     # Tamaño de cada imagen
+num = 20000         # Tamaño conjunto de entrenamiento
+num_test = 5000     # Tamaño conjunto de prueba
+# Definimos el grid para la generación de las señales
+ddx = np.linspace(-1.0, 1.0, K)
+ddy = np.linspace(-1.0, 1.0, L)
+xv, yv = np.meshgrid(ddx, ddy)
+cart.make_cart_grid(xv, yv)
+# Generamos 30,000 señales variando los parámetros del polinomio a generar
+Z = []
+for i in range(num):
+  # Variamos los parámetros para el polinomio
+  c = np.random.normal(size=cart.nk)
+  # Generamos polinomio
+  Phi = cart.eval_grid(c, matrix=True)
+  # Reemplazamos NaN con 0
+  p = np.nan_to_num(Phi, False, 0)
+  #p = Phi
+  # Reescalamos a 0-1 (necesario para que la red calcule correctamente las métricas)
+  # Verificar con el Dr. si esto sería necesario en este caso
+  #p_scaled = (p - np.min(p)) / (np.max(p) - np.min(p))
+  # Agregamos a conjunto de resultados
+  Z.append(p)
+
+# Desplegamos una muestra
+from matplotlib import pyplot as plt
+
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+for i in range(3):
+  for j in range(3):
+    # print(Z[i*3 + j])
+    print(f"Señal {i*3+j}, máx: {np.max(Z[i*3+j])}, min: {np.min(Z[i*3+j])}")
+    ax[i,j].imshow(Z[i*3 + j])
+    ax[i,j].set_title(f"Señal {i*3+j}")
+
+fig.tight_layout()
+plt.savefig(f"figura1.png")
+plt.close()
+
+# Definimos función W para el envolvimiento de fase del polinomio
+def W(p):
+  return np.arctan2(np.sin(p), np.cos(p))
+
+# En vez de generar las derivadas direccionales ahora aplicamos el envolvimiento de fase del polinomio
+WZ = []
+for img in Z:
+  WZ.append(W(img))
+
+# Desplegamos una muestra de los polinomios con envolvimiento de fase
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+for i in range(3):
+  for j in range(3):
+    print(f"Señal {i*3+j}, máx: {np.max(WZ[i*3+j])}, min: {np.min(WZ[i*3+j])}")
+    ax[i,j].imshow(WZ[i*3 + j])
+    ax[i,j].set_title(f"W(Señal {i*3+j})")
+
+fig.tight_layout()
+plt.savefig(f"figura2.png")
+plt.close()
+
+# Generamos las derivadas direccionales para cada imagen sin envoltura
+Dx = []
+Dy = []
+for img in Z:
+  img_dy, img_dx = np.gradient(img)
+  # Aplicamos W a los gradientes para eliminar las transiciones
+  Dx.append(img_dx)
+  Dy.append(img_dy)
+
+# Desplegamos una muestra de los gradientes en X
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+for i in range(3):
+  for j in range(3):
+    ax[i,j].imshow(Dx[i*3 + j])
+    ax[i,j].set_title(f"Dx {i*3+j}")
+
+fig.tight_layout()
+plt.savefig(f"figura3.png")
+plt.close()
+
+# Desplegamos una muestra de los gradientes en Y
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+for i in range(3):
+  for j in range(3):
+    #print(Dy[i*3 + j])
+    ax[i,j].imshow(Dy[i*3 + j])
+    ax[i,j].set_title(f"Dy {i*3+j}")
+
+fig.tight_layout()
+plt.savefig(f"figura4.png")
+plt.close()
+
+# Generamos las derivadas direccionales para cada imagen sobre la fase envuelta
+DWx = []
+DWy = []
+for img in WZ:
+  img_dy, img_dx = np.gradient(img)
+  # Aplicamos W a los gradientes para eliminar las transiciones
+  DWx.append(W(img_dx))
+  DWy.append(W(img_dy))
+
+# Desplegamos una muestra de los gradientes en X
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+for i in range(3):
+  for j in range(3):
+    ax[i,j].imshow(DWx[i*3 + j])
+    ax[i,j].set_title(f"DWx {i*3+j}")
+
+fig.tight_layout()
+plt.savefig(f"figura5.png")
+plt.close()
+
+# Desplegamos una muestra de los gradientes en Y
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+for i in range(3):
+  for j in range(3):
+    #print(Dy[i*3 + j])
+    ax[i,j].imshow(DWy[i*3 + j])
+    ax[i,j].set_title(f"DWy {i*3+j}")
+
+fig.tight_layout()
+plt.savefig(f"figura6.png")
+plt.close()
+
+# Generación de conjunto de polinomios de prueba
+# Generamos imágenes de prueba
+Z_test = []
+for i in range(num_test):
+  # Variamos los parámetros para el polinomio
+  c = np.random.normal(size=cart.nk)
+  # Generamos polinomio
+  Phi = cart.eval_grid(c, matrix=True)
+  # Reemplazamos NaN con 0
+  p = np.nan_to_num(Phi, False, 0)
+  # Reescalamos a 0-1 (necesario para que la red calcule correctamente las métricas)
+  #p_scaled = (p - np.min(p)) / (np.max(p) - np.min(p))
+  Z_test.append(p)
+# Aplicamos función de fase
+WZ_test = []
+for img in Z_test:
+    WZ_test.append(W(img))
+# Generamos las derivadas direccionales para cada imagen
+Dx_test = []
+Dy_test = []
+for img in Z_test:
+  img_dy, img_dx = np.gradient(img)
+  Dx_test.append(img_dx)
+  Dy_test.append(img_dy)
+
+DWx_test = []
+DWy_test = []
+for img in WZ_test:
+  img_dy, img_dx = np.gradient(img)
+  DWx_test.append(W(img_dx))
+  DWy_test.append(W(img_dy))
+
+
+# Conversión a tensores
+# Convertimos a tensores
+Dtf_x_test = tf.expand_dims(tf.convert_to_tensor(DWx_test, dtype=tf.float32), axis=-1)
+Dtf_y_test = tf.expand_dims(tf.convert_to_tensor(DWy_test, dtype=tf.float32), axis=-1)
+# print(Dtf_x.shape)
+# print(Dtf_y.shape)
+Dtf_test = tf.keras.layers.Concatenate(axis=3)([Dtf_x_test, Dtf_y_test])
+Ztf_test = tf.expand_dims(tf.convert_to_tensor(Z_test, dtype=tf.float32), axis=-1)
+
 # Definimos parámetros iniciales
 def train_model(scale_factor, fn_activation):
     '''
@@ -18,132 +188,6 @@ def train_model(scale_factor, fn_activation):
     print(80*"=")
     print(f"Factor de escala: {scale_factor}, Función de activación: {fn_activation}")
     print(80 * "=")
-    order = 6           # Orden de los polinomios a generar
-    cart = RZern(order) # Generador de polinomios
-    dim = 128           # Tamaño de dimensiones de imagen
-    L, K = dim, dim     # Tamaño de cada imagen
-    num = 20000         # Tamaño conjunto de entrenamiento
-    num_test = 5000     # Tamaño conjunto de prueba
-    # Definimos el grid para la generación de las señales
-    ddx = np.linspace(-1.0, 1.0, K)
-    ddy = np.linspace(-1.0, 1.0, L)
-    xv, yv = np.meshgrid(ddx, ddy)
-    cart.make_cart_grid(xv, yv)
-    # Generamos 30,000 señales variando los parámetros del polinomio a generar
-    Z = []
-    for i in range(num):
-      # Variamos los parámetros para el polinomio
-      c = np.random.normal(size=cart.nk)
-      # Generamos polinomio
-      Phi = cart.eval_grid(c, matrix=True)
-      # Reemplazamos NaN con 0
-      p = np.nan_to_num(Phi, False, 0)
-      #p = Phi
-      # Reescalamos a 0-1 (necesario para que la red calcule correctamente las métricas)
-      # Verificar con el Dr. si esto sería necesario en este caso
-      #p_scaled = (p - np.min(p)) / (np.max(p) - np.min(p))
-      # Agregamos a conjunto de resultados
-      Z.append(p)
-
-    # Desplegamos una muestra
-    from matplotlib import pyplot as plt
-
-    fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
-    for i in range(3):
-      for j in range(3):
-        # print(Z[i*3 + j])
-        print(f"Señal {i*3+j}, máx: {np.max(Z[i*3+j])}, min: {np.min(Z[i*3+j])}")
-        ax[i,j].imshow(Z[i*3 + j])
-        ax[i,j].set_title(f"Señal {i*3+j}")
-
-    fig.tight_layout()
-    plt.savefig(f"scale_{scale_factor}_activation_{fn_activation}_figura1.png")
-    plt.close()
-
-    # Definimos función W para el envolvimiento de fase del polinomio
-    def W(p):
-      return np.arctan2(np.sin(p), np.cos(p))
-
-    # En vez de generar las derivadas direccionales ahora aplicamos el envolvimiento de fase del polinomio
-    WZ = []
-    for img in Z:
-      WZ.append(W(img))
-
-    # Desplegamos una muestra de los polinomios con envolvimiento de fase
-    fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
-    for i in range(3):
-      for j in range(3):
-        print(f"Señal {i*3+j}, máx: {np.max(WZ[i*3+j])}, min: {np.min(WZ[i*3+j])}")
-        ax[i,j].imshow(WZ[i*3 + j])
-        ax[i,j].set_title(f"W(Señal {i*3+j})")
-
-    fig.tight_layout()
-    plt.savefig(f"scale_{scale_factor}_activation_{fn_activation}_figura2.png")
-    plt.close()
-
-    # Generamos las derivadas direccionales para cada imagen sin envoltura
-    Dx = []
-    Dy = []
-    for img in Z:
-      img_dy, img_dx = np.gradient(img)
-      # Aplicamos W a los gradientes para eliminar las transiciones
-      Dx.append(img_dx)
-      Dy.append(img_dy)
-
-    # Desplegamos una muestra de los gradientes en X
-    fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
-    for i in range(3):
-      for j in range(3):
-        ax[i,j].imshow(Dx[i*3 + j])
-        ax[i,j].set_title(f"Dx {i*3+j}")
-
-    fig.tight_layout()
-    plt.savefig(f"scale_{scale_factor}_activation_{fn_activation}_figura3.png")
-    plt.close()
-
-    # Desplegamos una muestra de los gradientes en Y
-    fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
-    for i in range(3):
-      for j in range(3):
-        #print(Dy[i*3 + j])
-        ax[i,j].imshow(Dy[i*3 + j])
-        ax[i,j].set_title(f"Dy {i*3+j}")
-
-    fig.tight_layout()
-    plt.savefig(f"scale_{scale_factor}_activation_{fn_activation}_figura4.png")
-    plt.close()
-
-    # Generamos las derivadas direccionales para cada imagen sobre la fase envuelta
-    DWx = []
-    DWy = []
-    for img in WZ:
-      img_dy, img_dx = np.gradient(img)
-      # Aplicamos W a los gradientes para eliminar las transiciones
-      DWx.append(W(img_dx))
-      DWy.append(W(img_dy))
-
-    # Desplegamos una muestra de los gradientes en X
-    fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
-    for i in range(3):
-      for j in range(3):
-        ax[i,j].imshow(DWx[i*3 + j])
-        ax[i,j].set_title(f"DWx {i*3+j}")
-
-    fig.tight_layout()
-    plt.savefig(f"scale_{scale_factor}_activation_{fn_activation}_figura5.png")
-    plt.close()
-
-    # Desplegamos una muestra de los gradientes en Y
-    fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
-    for i in range(3):
-      for j in range(3):
-        #print(Dy[i*3 + j])
-        ax[i,j].imshow(DWy[i*3 + j])
-        ax[i,j].set_title(f"DWy {i*3+j}")
-
-    fig.tight_layout()
-    plt.savefig(f"scale_{scale_factor}_activation_{fn_activation}_figura6.png")
-    plt.close()
 
     # Arquitectura del Autoencoder variacional
 
@@ -155,7 +199,7 @@ def train_model(scale_factor, fn_activation):
     LATENT_DIM    = 150
     BATCH_SIZE    = 384
     R_LOSS_FACTOR = 100000  # 10000
-    EPOCHS        = 100
+    EPOCHS        = 2
     INITIAL_EPOCH = 0
 
     steps_per_epoch = num//BATCH_SIZE
@@ -481,6 +525,7 @@ def train_model(scale_factor, fn_activation):
             steps_per_epoch = steps_per_epoch,
             callbacks       = callbacks)
     # Resultados del entrenamiento
+    from matplotlib import pyplot as plt
     # Plot training & validation loss values
     plt.figure(figsize=(30, 5))
     plt.subplot(121)
@@ -490,12 +535,10 @@ def train_model(scale_factor, fn_activation):
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Loss', 'Reconstruction'], loc='upper left')
-    plt.savefig(f"scale_{scale_factor}_activation_{fn_activation}_figura8.png")
+    plt.savefig(f"scale_{scale_factor}_activation_{fn_activation}_training_results.png")
     plt.close()
 
     vae.save_weights("final_weights_model_vae2.h5")
-
-    import matplotlib.pyplot as plt
 
     def plot_latent_space(vae, input_size=(28,28,1), n=30, figsize=15,  scale=1., latents_start=[0,1]):
         # display a n*n 2D manifold of digits
@@ -526,53 +569,9 @@ def train_model(scale_factor, fn_activation):
         plt.xlabel("z[{}]".format(latents_start[0]))
         plt.ylabel("z[{}]".format(latents_start[1]))
         plt.imshow(canvas[:,:,0])
-        plt.savefig(f"scale_{scale_factor}_activation_{fn_activation}_figura9.png")
+        plt.savefig(f"scale_{scale_factor}_activation_{fn_activation}_latent_space.png")
         plt.close()
-
-
     plot_latent_space(vae, input_size=INPUT_DIM, n = 6, latents_start=[20,30], scale=3)
-
-    # Generación de conjunto de polinomios de prueba
-    # Generamos imágenes de prueba
-    Z_test = []
-    for i in range(num_test):
-      # Variamos los parámetros para el polinomio
-      c = np.random.normal(size=cart.nk)
-      # Generamos polinomio
-      Phi = cart.eval_grid(c, matrix=True)
-      # Reemplazamos NaN con 0
-      p = np.nan_to_num(Phi, False, 0)
-      # Reescalamos a 0-1 (necesario para que la red calcule correctamente las métricas)
-      #p_scaled = (p - np.min(p)) / (np.max(p) - np.min(p))
-      Z_test.append(p)
-    # Aplicamos función de fase
-    WZ_test = []
-    for img in Z_test:
-        WZ_test.append(W(img))
-    # Generamos las derivadas direccionales para cada imagen
-    Dx_test = []
-    Dy_test = []
-    for img in Z_test:
-      img_dy, img_dx = np.gradient(img)
-      Dx_test.append(img_dx)
-      Dy_test.append(img_dy)
-
-    DWx_test = []
-    DWy_test = []
-    for img in WZ_test:
-      img_dy, img_dx = np.gradient(img)
-      DWx_test.append(W(img_dx))
-      DWy_test.append(W(img_dy))
-
-
-    # Conversión a tensores
-    # Convertimos a tensores
-    Dtf_x_test = tf.expand_dims(tf.convert_to_tensor(DWx_test, dtype=tf.float32), axis=-1)
-    Dtf_y_test = tf.expand_dims(tf.convert_to_tensor(DWy_test, dtype=tf.float32), axis=-1)
-    # print(Dtf_x.shape)
-    # print(Dtf_y.shape)
-    Dtf_test = tf.keras.layers.Concatenate(axis=3)([Dtf_x_test, Dtf_y_test])
-    Ztf_test = tf.expand_dims(tf.convert_to_tensor(Z_test, dtype=tf.float32), axis=-1)
 
     # Predicción de resultados
     # Visualizamos un conjunto de predicciones
@@ -599,7 +598,7 @@ def train_model(scale_factor, fn_activation):
       ax[i, 3].imshow(Ztf_test[i,:,:,0])
       ax[i, 3].set_title('Polinomio')
     fig.tight_layout()
-    plt.savefig(f"scale_{scale_factor}_activation_{fn_activation}_figura10.png")
+    plt.savefig(f"scale_{scale_factor}_activation_{fn_activation}_prediction_results.png")
     plt.close()
 
 ACTIVATIONS = ['sigmoid','tanh']
