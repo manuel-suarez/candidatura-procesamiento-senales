@@ -198,7 +198,7 @@ def train_model(scale_factor, fn_activation):
     LATENT_DIM    = 150
     BATCH_SIZE    = 384
     R_LOSS_FACTOR = 100000  # 10000
-    EPOCHS        = 2
+    EPOCHS        = 100
     INITIAL_EPOCH = 0
 
     steps_per_epoch = num//BATCH_SIZE
