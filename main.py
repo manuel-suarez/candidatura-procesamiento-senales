@@ -1,8 +1,7 @@
 # Import
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
-from numpy.random import random, randint, randn
+from numpy.random import random
 from zernike import RZern
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -46,6 +45,8 @@ def train_model(scale_factor, fn_activation):
       Z.append(p)
 
     # Desplegamos una muestra
+    from matplotlib import pyplot as plt
+
     fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
     for i in range(3):
       for j in range(3):
