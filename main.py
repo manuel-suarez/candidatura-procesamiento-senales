@@ -73,7 +73,7 @@ plt.savefig("figura2.png")
 # Generamos las derivadas direccionales para cada imagen sobre la fase envuelta
 DWx = []
 DWy = []
-for img in Z:
+for img in WZ:
   img_dy, img_dx = np.gradient(img)
   # Aplicamos W a los gradientes para eliminar las transiciones
   DWx.append(img_dx)
