@@ -149,7 +149,7 @@ GRADIENT_DIM  = (128,128,2)
 LATENT_DIM    = 150
 BATCH_SIZE    = 384
 R_LOSS_FACTOR = 100000  # 10000
-EPOCHS        = 100
+EPOCHS        = 10
 INITIAL_EPOCH = 0
 
 steps_per_epoch = num//BATCH_SIZE
@@ -545,12 +545,21 @@ Dx_test = []
 Dy_test = []
 for img in Z_test:
   img_dy, img_dx = np.gradient(img)
-  Dx_test.append(W(img_dx))
-  Dy_test.append(W(img_dy))
+  Dx_test.append(img_dx)
+  Dy_test.append(img_dy)
+
+DWx_test = []
+DWy_test = []
+for img in WZ_test:
+  img_dy, img_dx = np.gradient(img)
+  DWx_test.append(W(img_dx))
+  DWy_test.append(W(img_dy))
+
+
 # Conversión a tensores
 # Convertimos a tensores
-Dtf_x_test = tf.expand_dims(tf.convert_to_tensor(Dx_test, dtype=tf.float32), axis=-1)
-Dtf_y_test = tf.expand_dims(tf.convert_to_tensor(Dy_test, dtype=tf.float32), axis=-1)
+Dtf_x_test = tf.expand_dims(tf.convert_to_tensor(DWx_test, dtype=tf.float32), axis=-1)
+Dtf_y_test = tf.expand_dims(tf.convert_to_tensor(DWy_test, dtype=tf.float32), axis=-1)
 # print(Dtf_x.shape)
 # print(Dtf_y.shape)
 Dtf_test = tf.keras.layers.Concatenate(axis=3)([Dtf_x_test, Dtf_y_test])
